@@ -1,7 +1,6 @@
 import os
 import random
 import shutil
-import pathlib
 
 def generate_bonus(modifiers, multiplier, negative_chance):
     modifier = random.choice(modifiers)
@@ -54,8 +53,10 @@ def get_policies_info():
     else:
         dir = '../../common/policies'
         files = os.listdir(dir)
+    file_name = ''
     os.makedirs(backup_path, exist_ok=True)
     for filename in files:
+        file_name = filename
         path = dir + '/' + filename
         if not os.path.isfile(path):
             continue
@@ -99,12 +100,12 @@ def get_policies_info():
             parentheses_counter += open_parentheses - close_parentheses
         if not os.path.exists(backup_path + '/' + filename):
             shutil.copy(path, backup_path + '/' + filename)
-            os.remove(path)
-    return policies_info
+            open(path, 'w').close()
+    return policies_info, file_name
 
 
-def generate_new_policies(policies_info, modifiers, multiplier, add_bonus, additinional_bonus_chance, negative_chance):
-    policies_path = f'../../common/policies/0000000000_{os.path.basename(pathlib.Path(os.getcwd()).parent.parent)}_random_policies47.txt'
+def generate_new_policies(policies_info, modifiers, multiplier, add_bonus, additinional_bonus_chance, negative_chance, file_name):
+    policies_path = f'../../common/policies/{file_name}'
     new_policies = open(policies_path, 'w')
     for policy in policies_info:
         new_policies.write(policy[0])
@@ -127,6 +128,6 @@ negative_chance = get_correct_info('chance for modifier to become negative, in p
 multiplier = get_correct_info('modifier multriplier: ')
 
 modifiers = get_all_modifiers()
-policies_info = get_policies_info()
+policies_info, file_name = get_policies_info()
 
-generate_new_policies(policies_info, modifiers, multiplier, add_bonus, additinional_bonus_chance, negative_chance)
+generate_new_policies(policies_info, modifiers, multiplier, add_bonus, additinional_bonus_chance, negative_chance, file_name)

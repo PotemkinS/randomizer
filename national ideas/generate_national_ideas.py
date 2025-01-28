@@ -1,7 +1,6 @@
 import os
 import random
 import shutil
-import pathlib
 
 
 def is_idea_groups_file(text):
@@ -42,7 +41,7 @@ def get_all_modifiers():
 
 def get_ideas_info():
     ideas_info = []
-    backup_path = '../../common/ideas/original ideas'
+    backup_path = '../../common/ideas/original national ideas'
     if os.path.isdir(backup_path) and len(os.listdir(backup_path)) > 0:
         dir = backup_path
         files = os.listdir(dir)
@@ -50,7 +49,9 @@ def get_ideas_info():
         dir = '../../common/ideas'
         files = os.listdir(dir)
     os.makedirs(backup_path, exist_ok=True)
+    file_name = ''
     for filename in files:
+        file_name = filename
         path = dir + '/' + filename
         if not os.path.isfile(path):
             continue
@@ -90,12 +91,12 @@ def get_ideas_info():
             parentheses_counter += open_parentheses - close_parentheses
         if not os.path.exists(backup_path + '/' + filename):
             shutil.copy(path, backup_path + '/' + filename)
-            os.remove(path)
-    return ideas_info
+            open(path, 'w').close()
+    return ideas_info, file_name
 
 
-def generate_new_ideas(ideas_info, modifiers, multiplier, add_bonus, additinional_bonus_chance, negative_chance, replace):
-    ideas_path = f'../../common/ideas/0000000000_{os.path.basename(pathlib.Path(os.getcwd()).parent.parent)}_random_ideas47.txt'
+def generate_new_ideas(ideas_info, modifiers, multiplier, add_bonus, additinional_bonus_chance, negative_chance, file_name):
+    ideas_path = f'../../common/ideas/{file_name}'
     new_ideas = open(ideas_path, 'w')
     for ideas in ideas_info:
         new_ideas.write(ideas[0])
@@ -139,7 +140,8 @@ add_bonus = get_correct_info('how many additional modifiers each idea can have: 
 additinional_bonus_chance = get_correct_info('additional modifier chance, in percent. enter from 0 to 100: ')
 negative_chance = get_correct_info('chance for modifier to become negative, in percent. enter from 0 to 100: ')
 multiplier = get_correct_info('modifier multriplier: ')
-modifiers = get_all_modifiers()
-ideas_info = get_ideas_info()
 
-generate_new_ideas(ideas_info, modifiers, multiplier, add_bonus, additinional_bonus_chance, negative_chance)
+modifiers = get_all_modifiers()
+ideas_info, file_name = get_ideas_info()
+
+generate_new_ideas(ideas_info, modifiers, multiplier, add_bonus, additinional_bonus_chance, negative_chance, file_name)

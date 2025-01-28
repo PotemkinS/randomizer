@@ -2,8 +2,8 @@ import os
 import shutil
 
 
-backup_path = '../../common/policies/original policies'
-original_path = '../../common/policies'
+backup_path = '../../common/great_projects/original great projects'
+original_path = '../../common/great_projects'
 if os.path.isdir(backup_path):
     files = os.listdir(backup_path)
     for file in files:
