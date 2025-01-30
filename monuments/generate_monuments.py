@@ -1,6 +1,10 @@
 import os
 import random
 import shutil
+from colorama import Fore
+import colorama
+
+colorama.init(autoreset=True)
 
 
 class monument_tier:
@@ -13,7 +17,7 @@ class monument_tier:
 
 class monument:
     def __init__(self, name, start, date, time, cost, movable, move_time, starting_tier, type, build_trigger, on_built, on_destroyed, 
-                 can_use, can_upgrade, keep_trigger, tiers):
+                 can_use, can_upgrade, keep_trigger, tiers : list[monument_tier]):
         self.name = name
         self.start = start
         self.date = date
@@ -32,18 +36,6 @@ class monument:
         self.tiers = tiers
 
 
-def generate_bonus(modifiers, multiplier, negative_chance):
-    modifier = random.choice(modifiers)
-    if modifier[1] != 'yes':
-        negative =  random.randint(1, 100) <= negative_chance
-        mult = random.randint(1, multiplier)
-        value = round(float(modifier[1])*mult,3)
-        if negative:
-            value *= -1
-        return (modifier[0], value)
-    return modifier
-
-
 def get_all_modifiers():
     modifiers = []
     path = '../generate_info/modifiers.txt'
@@ -55,17 +47,7 @@ def get_all_modifiers():
         split = modifier.split('=')
         modifiers.append((split[0], split[1]))
 
-    local_modifiers = []
-    path = '../generate_info/local_modifiers.txt'
-    file = open(path, 'r')
-    local_modifiers_info = file.readlines()
-    file.close()
-    for local_modifier in local_modifiers_info:
-        local_modifier = local_modifier.replace('\n', '')
-        split = local_modifier.split('=')
-        local_modifiers.append((split[0], split[1]))
-
-    return modifiers, local_modifiers
+    return modifiers
 
 
 def get_monuments_info():
@@ -76,10 +58,10 @@ def get_monuments_info():
     file_name = ''
     os.makedirs(backup_path, exist_ok=True)
     for filename in files:
-        file_name = filename
         path = dir + '/' + filename
         if not os.path.isfile(path):
             continue
+        file_name = filename
         file = open(path, 'r', errors='ignore')
         lines = file.readlines()
         file.close()
@@ -92,7 +74,7 @@ def get_monuments_info():
         time = ''
         cost = ''
         mobavle = ''
-        move_cost = ''
+        move_cost = '\tmove_days_per_unit_distance = 10\n'
         start_tier = ''
         type = ''
         build_trigger = ''
@@ -204,7 +186,7 @@ def get_monuments_info():
                 time = ''
                 cost = ''
                 mobavle = ''
-                move_cost = ''
+                move_cost = '\tmove_days_per_unit_distance = 10\n'
                 start_tier = ''
                 type = ''
                 build_trigger = ''
@@ -221,55 +203,179 @@ def get_monuments_info():
     return monuments_info, file_name
 
 
-def generate_new_monuments(monuments_info, modifiers, multiplier, add_bonus, additinional_bonus_chance, negative_chance, file_name):
-    a = 1 
+def generate_new_monuments(monuments_info : list[monument], file_name, modifiers, change_movable, change_available, change_cost, change_time, change_tier, add_bonus, additinional_bonus_chance, multipliers):
+    file_path = f'../../common/great_projects/{file_name}'
+    new_monuments = open(file_path, 'w')
+    for monument in monuments_info:
+        new_monuments.write(monument.name)
+        new_monuments.write(monument.start)
+        new_monuments.write(monument.date)
+        new_monuments.write(monument.type)
+        if change_movable[0] and 'canal' not in monument.type:
+            if random.randint(1, 100) <= change_movable[1]:
+                new_monuments.write('\tcan_be_moved = yes\n')
+            else:
+                new_monuments.write('\tcan_be_moved = no\n')
+        else:
+            new_monuments.write(monument.movable)
+        new_monuments.write(monument.move_time)
+        if change_tier[0]:
+            new_monuments.write(f'\tstarting_tier = {random.randint(0, change_tier[1])}\n')
+        else:
+            new_monuments.write(monument.starting_tier)
+        if change_time[0]:
+            new_monuments.write(f'\ttime = {{\n\t\tmonth = {random.randint(change_time[1], change_time[2])}\n\t}}\n')
+        else:
+            new_monuments.write(monument.time)
+        if change_cost[0]:
+            new_monuments.write(f'\tbuild_cost = {random.randint(change_cost[1], change_cost[2])}\n')
+        else:
+            new_monuments.write(monument.cost)
+        if change_available[0] and random.randint(1, 100) <= change_movable[1]:
+            new_monuments.write('\tcan_use_modifiers_trigger = {}\n')
+            new_monuments.write('\tcan_upgrade_trigger = {}\n')
+        else:
+            new_monuments.write(monument.can_upgrade)
+            new_monuments.write(monument.can_use)
+        new_monuments.write(monument.build_trigger)
+        new_monuments.write(monument.keep_trigger)
+        new_monuments.write(monument.on_built)
+        new_monuments.write(monument.on_destroyed)
+        mods = []
+        for i in range(add_bonus):
+            if random.randint(1, 100) <= additinional_bonus_chance:
+                mods.append(random.choice(modifiers))
+        mods.append(random.choice(modifiers))
+        for i in range(len(monument.tiers)):
+            new_monuments.write(f'\n\ttier_{i} = {{\n')
+            if change_time[0]:
+                new_monuments.write(f'\t\tupgrade_time = {{ months = {random.randint(change_time[1], change_time[2])}}}\n')
+            else:
+                new_monuments.write(monument.tiers[i].time)
+            if change_cost[0]:
+                new_monuments.write(f'\t\tcost_to_upgrade = {{ factor = {random.randint(change_cost[1], change_cost[2])}}}\n')
+            else:
+                new_monuments.write(monument.tiers[i].cost)
+            new_monuments.write(monument.tiers[i].on_upgrade)
+            for cond in monument.tiers[i].conditional_modifiers:
+                new_monuments.write(cond)
+            if i > 0:
+                new_monuments.write('\t\tcountry_modifiers = {\n')
+                for mod in mods:
+                    if mod[1] != 'yes':
+                        mult = round(float(mod[1])*random.randint(multipliers[i - 1][0], multipliers[i - 1][1]), 3)
+                        new_monuments.write(f'\t\t\t{mod[0]} = {mult}\n')
+                    else:
+                        new_monuments.write(f'\t\t\t{mod[0]} = {mod[1]}\n')
+                new_monuments.write('\t\t}\n')
+            new_monuments.write('\t}\n')
+        new_monuments.write('}\n\n')
 
 
-def get_correct_info(message, error_message):
+
+def get_integer(message, can_be_negative = False):
     while True:
         var = input(message)
         allowed_chars = '0123456789'
+        if can_be_negative:
+            allowed_chars = '-0123456789'
         good_var = True
         for char in var:
             if char not in allowed_chars:
                 good_var = False
                 break
-        if  good_var and float(var).is_integer():
+        if  good_var:
             return int(var)
         else:
-            print(error_message)
+            if can_be_negative:
+                print(Fore.RED + 'number must be integer')
+            else:
+                print(Fore.RED + 'number must be non-negative integer')
 
 
-start_tier = ''
-max_tier = -1
-build_time = ''
+max_start_tier = -1
 min_build_time = 120
 max_build_time = 480
-build_cost = ''
 min_build_cost = 1000
 max_build_cost = 5000
-unit_specialisation = ''
-local_specialisation = ''
-movable = ''
-available_for_all = ''
-normal_random = ''
+movable_chance = -1
+available_chance = -1
 
-add_bonus = get_correct_info('how many additional modifiers each idea can have: ')
-additinional_bonus_chance = get_correct_info('additional modifier chance, in percent. enter from 0 to 100: ')
-negative_chance = get_correct_info('chance for modifier to become negative, in percent. enter from 0 to 100: ')
-multiplier = get_correct_info('modifier multriplier: ')
+# print(Fore.GREEN + 'Explanation for the next question.\nThe generation of ideas, policies and units uses random number generation. This means that all numbers between the minimum and maximum have the same chance of being generated. Here I decided to try to add a normal distribution. This means that most modifiers will be “average” and a smaller portion will be too small or too large.\nExample how it was if the minimum number was 1 and the maximum 5 then the probability is 1=2=3=4=5.\nNow the probability with normal distribution is 1<2<3>4>5.')
+# gauss_random = input('If you want normal distribution, enter 1. If you enter anything else, the probability of all events will be the same: ')
+
+change_movable = input('If you want to change whether you can move monuments, enter 1: ') == '1'
+if change_movable:
+    movable_chance = get_integer('chance for monument to be movable in percent. enter from 0 to 100: ')
+change_movable = (change_movable, movable_chance)
+
+change_available = input('if you want monuments to have no requirements for use and upgrade enter 1: ') == '1'
+if change_available:
+    available_chance = get_integer('chance for the monument to have no requirements for use and upgrade in percent. enter from 0 to 100: ')
+change_available = (change_available, available_chance)
+
+add_bonus = get_integer('how many additional modifiers each monument can have: ')
+additinional_bonus_chance = get_integer('additional modifier chance, in percent. enter from 0 to 100: ')
+print('you need to answer 6 questions, two for each tier, what is the minimum and maximum multiplier for the modifiers on that tier.')
+multipliers = [[1,1],[1,1],[1,1]]
+while True:
+    multipliers[0][0] = get_integer('minimum modifier multiplier for tier 1: ', True)
+    multipliers[0][1] = get_integer('maximum modifier multiplier for tier 1: ', True)
+    if multipliers[0][0] <= multipliers[0][1]:
+        break
+    else:
+        print(Fore.RED + 'max multiplier must be equal to or greater than min multiplier')
+while True:
+    multipliers[1][0] = get_integer('minimum modifier multiplier for tier 2: ', True)
+    multipliers[1][1] = get_integer('maximum modifier multiplier for tier 2: ', True)
+    if multipliers[1][0] <= multipliers[1][1]:
+        break
+    else:
+        print(Fore.RED + 'max multiplier must be equal to or greater than min multiplier')
+while True:
+    multipliers[2][0] = get_integer('minimum modifier multiplier for tier 3: ', True)
+    multipliers[2][1] = get_integer('maximum modifier multiplier for tier 3: ', True)
+    if multipliers[2][0] <= multipliers[2][1]:
+        break
+    else:
+        print(Fore.RED + 'max multiplier must be equal to or greater than min multiplier')
 
 allowed_tiers = [0,1,2,3]
-change_tier = input() == '1'
+change_tier = input('if you want make start tier random enter 1: ') == '1'
 if change_tier:
-    while max_start_tier not in allowed_tiers:
-        max_start_tier = get_correct_info('')
+    while True:
+        max_start_tier = get_integer('enter max possible random start monument tier: ')
+        if max_start_tier in allowed_tiers:
+            break
+        else:
+            print(Fore.RED + 'max possible start monument tier can be 0-3')
+change_tier = (change_tier, max_start_tier)
 
-change_cost = input() == '1'
+change_cost = input('if you want to randomize the build cost enter 1: ') == '1'
 if change_cost:
-    while max_start_tier not in allowed_tiers:
-        max_start_tier = get_correct_info('')
+    while True:
+        min_build_cost = get_integer('minimum cost: ')
+        max_build_cost = get_integer('maximum cost: ')
+        if max_build_cost >= min_build_cost:
+            break
+        else:
+            print(Fore.RED + 'max cost must be equal to or greater than min cost')
+change_cost = (change_cost, min_build_cost, max_build_cost)
+
+change_time = input('if you want to randomize the build time enter 1: ') == '1'
+if change_time:
+    while True:
+        min_build_time = get_integer('minimum upgrade time in months: ')
+        max_build_time = get_integer('maximum upgrade time in months: ')
+        if max_build_time >= min_build_time:
+            break
+        else:
+            print(Fore.RED + 'max time must be equal to or greater than min time')
+change_time = (change_time, min_build_time, max_build_time)
 
 
-modifiers, local_modifiers = get_all_modifiers()
+
+modifiers = get_all_modifiers()
 monuments_info, file_name = get_monuments_info()
+
+generate_new_monuments(monuments_info, file_name, modifiers, change_movable, change_available, change_cost, change_time, change_tier, add_bonus, additinional_bonus_chance, multipliers)

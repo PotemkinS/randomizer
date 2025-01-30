@@ -125,7 +125,7 @@ def generate_new_policies(policies_info, modifiers, multiplier, add_bonus, addit
 add_bonus = get_correct_info('how many additional modifiers each policy can have: ')
 additinional_bonus_chance = get_correct_info('additional modifier chance, in percent. enter from 0 to 100: ')
 negative_chance = get_correct_info('chance for modifier to become negative, in percent. enter from 0 to 100: ')
-multiplier = get_correct_info('modifier multriplier: ')
+multiplier = get_correct_info('modifier multiplier: ')
 
 modifiers = get_all_modifiers()
 policies_info, file_name = get_policies_info()
