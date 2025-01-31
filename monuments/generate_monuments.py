@@ -53,7 +53,10 @@ def get_all_modifiers():
 def get_monuments_info():
     monuments_info = []
     backup_path = '../../common/great_projects/original great projects'
-    dir = '../../common/great_projects'
+    if os.path.isdir(backup_path) and len(os.listdir(backup_path)) > 0:
+        dir = backup_path
+    else:
+        dir = '../../common/great_projects'
     files = os.listdir(dir)
     file_name = ''
     os.makedirs(backup_path, exist_ok=True)

@@ -143,5 +143,3 @@ modifiers = get_all_modifiers()
 ideas_info, file_name = get_ideas_info()
 
 generate_new_ideas(ideas_info, modifiers, multiplier, add_bonus, additinional_bonus_chance, negative_chance, file_name)
-
-data = ('name', 'category', 'trigger', [])
