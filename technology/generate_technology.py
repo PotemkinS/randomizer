@@ -286,16 +286,16 @@ def get_integer(message, can_be_negative = False):
 ahead_bonus_count = 0
 multiplier = 0
 even_filling = False
-randomize_ahead_of_time = input('randomize_ahead_of_time') == '1'
+randomize_ahead_of_time = input('if you want to randomize ahead of time, enter 1: ') == '1'
 if randomize_ahead_of_time:
-    ahead_bonus_count = get_integer('ahead_additional') 
-    multiplier = get_integer('multiplier')
-random_order_false_filling_true = input('random_order_false_filling_true') == '1'
+    ahead_bonus_count = get_integer('the number of bonuses ahead of time will contain: ') 
+    multiplier = get_integer('modifier multiplier: ')
+random_order_false_filling_true = input('if you want to change only the order of technologies but keep the content of technologies enter 1 (if you enter something else all bonuses will be the same but combinations within technologies will be different): ') == '1'
 if random_order_false_filling_true:
-    even_filling = input('even filling') == '1'
-keep_idea = input('keep_idea') == '1'
-keep_units = input('keep_units') == '1'
-keep_buildings_and_spy = input('keep_buildings_and_spy') == '1'
+    even_filling = input('if you want the bonuses to be evenly distributed across technologies enter 1 (otherwise technologies will contain a random number of bonuses): ') == '1'
+keep_idea = input('if you want the levels containing ideas to stay the same, enter 1:  ') == '1'
+keep_units = input('if you want the levels containing units to stay the same, enter 1: ') == '1'
+keep_buildings_and_spy = input('If you want levels containing buildings, diplomatic actions, governments (for those who do not have dharma probably), force march, the ability to drill troops do not change - enter 1: ') == '1'
 
 modifiers = get_all_modifiers()
 technologies_info = get_technologies_info(keep_idea, keep_units, keep_buildings_and_spy)
