@@ -6,7 +6,7 @@ def generate_bonus(modifiers, multiplier, negative_chance):
     modifier = random.choice(modifiers)
     negative =  random.randint(1, 100) <= negative_chance
     while modifier[1] == 'yes' and negative:
-         modifier == random.choice(modifiers)
+         modifier = random.choice(modifiers)
     if modifier[1] != 'yes':
         mult = random.randint(1, multiplier)
         value = round(float(modifier[1])*mult,3)
