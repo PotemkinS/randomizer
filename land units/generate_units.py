@@ -35,7 +35,7 @@ def get_unit_info(path):
             parentheses_counter += open_parentheses - close_parentheses
             if parentheses_counter == 0:
                 in_trigger = False
-    return True, (os.path.basename(path), type, tech_group, trigger)
+    return True, (os.path.basename(path), type, tech_group, '')
 
 
 def get_all_units():

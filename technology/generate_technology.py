@@ -9,10 +9,10 @@ colorama.init(autoreset=True)
 
 
 class buff:
-    def __init__(self, buff, value, tech = 0):
+    def __init__(self, buff, value, idea_count = 0):
         self.buff = buff
         self.value = value
-        self.tech = tech
+        self.idea_count = idea_count
 
 
 class tech_file:
@@ -196,10 +196,17 @@ def generate_new_technologies(technologies_info : list[tech_file], modifiers, ra
                 while True:
                     if len(tech.buffs) > 0 and len(bonus_str) < spread[i]:
                         s = random.choice(tech.buffs)
-                        if s.buff == 'enable' or s.buff not in bonus_str:
-                            bonus_str.append(s.buff)
+                        if s.buff != 'enable' and s.buff in bonus_str and s.value != 'yes':
+                            index = [y.buff for y in baff].index(s.buff)
+                            if s.buff == 'allowed_idea_groups':
+                                baff[index].value = s.value
+                                baff[index].idea_count += 1
+                            else:
+                                baff[index].value = float(s.value) + float(baff[index].value)
+                        else:
                             baff.append(s)
-                            tech.buffs.remove(s)
+                        bonus_str.append(s.buff)
+                        tech.buffs.remove(s)
                     if len(bonus_str) == spread[i]:
                         buff_per_tech.append(baff)
                         baff = []
@@ -255,7 +262,8 @@ def generate_new_technologies(technologies_info : list[tech_file], modifiers, ra
                 source = tech.techs[order[i]]
             for baff in source:
                 if baff.buff == 'allowed_idea_groups' and not keep_idea:
-                    idea = tech.ideas_str.pop(0)
+                    for i in range(buff.idea_count):
+                        idea = tech.ideas_str.pop(0)
                     new_technologies.write(idea)
                 elif baff.buff != 'allowed_idea_groups':
                     new_technologies.write(f'\t{baff.buff} = {baff.value}\n')

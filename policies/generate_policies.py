@@ -4,9 +4,10 @@ import shutil
 
 def generate_bonus(modifiers, multiplier, negative_chance):
     modifier = random.choice(modifiers)
-
+    negative =  random.randint(1, 100) <= negative_chance
+    while modifier[1] == 'yes' and negative:
+         modifier == random.choice(modifiers)
     if modifier[1] != 'yes':
-        negative =  random.randint(1, 100) <= negative_chance
         mult = random.randint(1, multiplier)
         value = round(float(modifier[1])*mult,3)
         if negative:
@@ -56,10 +57,10 @@ def get_policies_info():
     file_name = ''
     os.makedirs(backup_path, exist_ok=True)
     for filename in files:
-        file_name = filename
         path = dir + '/' + filename
         if not os.path.isfile(path):
             continue
+        file_name = filename
         file = open(path, 'r', errors='ignore')
         lines = file.readlines()
         file.close()

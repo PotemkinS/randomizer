@@ -15,9 +15,10 @@ def is_idea_groups_file(text):
 
 def generate_bonus(modifiers, multiplier, negative_chance):
     modifier = random.choice(modifiers)
-
+    negative =  random.randint(1, 100) <= negative_chance
+    while modifier[1] == 'yes' and negative:
+         modifier == random.choice(modifiers)
     if modifier[1] != 'yes':
-        negative =  random.randint(1, 100) <= negative_chance
         mult = random.randint(1, multiplier)
         value = round(float(modifier[1])*mult,3)
         if negative:
@@ -51,13 +52,13 @@ def get_ideas_info():
     os.makedirs(backup_path, exist_ok=True)
     file_name = ''
     for filename in files:
-        file_name = filename
         path = dir + '/' + filename
         if not os.path.isfile(path):
             continue
         file = open(path, 'r', errors='ignore')
         if is_idea_groups_file(file.read()):
             continue
+        file_name = filename
         file.seek(0)
         lines = file.readlines()
         file.close()

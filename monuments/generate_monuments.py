@@ -234,7 +234,7 @@ def generate_new_monuments(monuments_info : list[monument], file_name, modifiers
             new_monuments.write(f'\tbuild_cost = {random.randint(change_cost[1], change_cost[2])}\n')
         else:
             new_monuments.write(monument.cost)
-        if change_available[0] and random.randint(1, 100) <= change_movable[1]:
+        if change_available[0] and random.randint(1, 100) <= change_available[1]:
             new_monuments.write('\tcan_use_modifiers_trigger = {}\n')
             new_monuments.write('\tcan_upgrade_trigger = {}\n')
         else:
