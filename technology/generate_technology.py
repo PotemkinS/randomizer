@@ -74,6 +74,9 @@ def get_technologies_info(keep_idea, keep_units, keep_buildings):
         lines = file.readlines()
         file.close()
         points = ''
+        adm_tech = False
+        dip_tech = False
+        mil_tech = False
         if 'monarch_power=adm' in text:
             adm_tech = True
             points = 'monarch_power = ADM\n'
@@ -113,6 +116,8 @@ def get_technologies_info(keep_idea, keep_units, keep_buildings):
             copyline = line.replace('\t','').replace(' ','').replace('\n', '')
             if copyline.startswith('#'):
                 continue
+            if '#' in copyline:
+                copyline = copyline[0:copyline.index('#')]
             open_parentheses = copyline.count('{')
             close_parentheses = copyline.count('}')
             if copyline.startswith('technology={'):
